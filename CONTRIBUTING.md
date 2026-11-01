@@ -1,5 +1,9 @@
 # Участие в MicroUtils
 
+Пожалуйста, соблюдайте [кодекс поведения](CODE_OF_CONDUCT.md).
+Для уязвимостей используйте [приватные каналы из SECURITY.md](SECURITY.md),
+а не открытый Issue.
+
 ## Ошибка или предложение
 
 Создайте [Issue](https://github.com/AndZas/MicroUtils/issues/new/choose) и укажите утилиту,
