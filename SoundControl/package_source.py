@@ -25,7 +25,7 @@ SOURCE_PREFIX = f'SoundControl-{APP_VERSION}-source/'
 
 def package(destination=None):
     sample = dict(DEFAULTS, schema_version=SCHEMA_VERSION, target=None)
-    (ROOT/'config.example.json').write_text(json.dumps(sample, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
+    (ROOT/'config.example.json').write_text(json.dumps(sample, ensure_ascii=False, indent=2)+'\n', encoding='utf-8', newline='\n')
     destination = Path(destination) if destination else ROOT/f'release/SoundControl-{APP_VERSION}-source.zip'
     missing = [name for name in PUBLIC_FILES if not (ROOT/name).is_file()]
     if missing:

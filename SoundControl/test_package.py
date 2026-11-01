@@ -19,6 +19,7 @@ class PackageTests(unittest.TestCase):
                     self.assertFalse(name.endswith(('.log','.lnk')))
                     if name.endswith('.wav'):self.assertIn(PurePosixPath(name).name,{'mute.wav','unmute.wav','notice.wav'})
                 settings=json.loads(archive.read(SOURCE_PREFIX+'config.example.json'))
+                self.assertNotIn(b'\r',archive.read(SOURCE_PREFIX+'config.example.json'))
                 self.assertIsNone(settings['target'])
                 self.assertFalse(settings['launch_banana'])
                 self.assertFalse(settings['hotkey_enabled'])
