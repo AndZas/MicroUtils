@@ -1,0 +1,72 @@
+name: Sound Control — release draft
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_version:
+        description: Exact version from SoundControl/version.py
+        required: true
+        default: '1.0.0'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  draft:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: SoundControl
+    env:
+      EXPECTED_VERSION: ${{ inputs.expected_version }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: '3.13'
+          architecture: x64
+      - name: Verify requested component version
+        run: python -c "import os; from version import APP_VERSION; assert APP_VERSION == os.environ['EXPECTED_VERSION'], 'Version mismatch'"
+      - name: Create isolated environment
+        run: |
+          python -m venv .venv
+          .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Test and build
+        run: |
+          .\.venv\Scripts\python.exe -X faulthandler -m unittest discover -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          .\build.ps1 -Public
+      - name: Prepare all release files
+        run: .\.venv\Scripts\python.exe package_release.py --download
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: SoundControl-release-files
+          path: SoundControl/release/
+          retention-days: 14
+      - name: Create a draft only
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $manifest = Get-Content release/release-assets.json -Raw | ConvertFrom-Json
+          $tag = $manifest.tag
+          $version = $manifest.version
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) { throw "Release $tag already exists; inspect it before retrying" }
+          $notes = Get-Content "docs/releases/$version.md" -Raw
+          $assetBase = "https://github.com/$env:GH_REPO/releases/download/$tag"
+          $imageBase = "https://raw.githubusercontent.com/$env:GH_REPO/$env:GITHUB_SHA/SoundControl/docs/images"
+          $notes.Replace('{{ASSET_BASE}}',$assetBase).Replace('{{IMAGE_BASE}}',$imageBase) | Set-Content release/notes-rendered.md -Encoding utf8
+          $files = @($manifest.assets | ForEach-Object { Join-Path 'release' $_ })
+          $options = @('release','create',$tag,'--repo',$env:GH_REPO,'--target',$env:GITHUB_SHA,
+            '--draft','--latest=false','--title',"Sound Control $version",'--notes-file','release/notes-rendered.md')
+          if ($version.Contains('-')) { $options += '--prerelease' }
+          & gh @options @files
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

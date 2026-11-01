@@ -1,0 +1,42 @@
+name: Sound Control — checks
+
+on:
+  push:
+    paths: ['SoundControl/**', '.github/workflows/sound-control-*.yml', 'LICENSE']
+  pull_request:
+    paths: ['SoundControl/**', '.github/workflows/sound-control-*.yml', 'LICENSE']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: SoundControl
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: '3.13'
+          architecture: x64
+      - name: Create isolated environment
+        run: |
+          python -m venv .venv
+          .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Test without audio hardware
+        run: .\.venv\Scripts\python.exe -X faulthandler -m unittest discover -v
+      - name: Build Windows x64 EXE
+        run: .\build.ps1 -Public
+      - name: Verify executable contents
+        run: .\.venv\Scripts\python.exe -c "from pathlib import Path; from package_release import check_binary; check_binary(Path('dist-public/VoicemeeterMuteTray.exe'))"
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: SoundControl-windows-x64-validation
+          path: SoundControl/dist-public/VoicemeeterMuteTray.exe
+          retention-days: 7

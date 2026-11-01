@@ -1,0 +1,22 @@
+name: Идея
+description: Предложить улучшение или новую утилиту
+body:
+  - type: input
+    id: utility
+    attributes:
+      label: Для какой утилиты
+      placeholder: Sound Control / новая утилита
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Какую задачу нужно решить
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Предлагаемое поведение
+    validations:
+      required: true

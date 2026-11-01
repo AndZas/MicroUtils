@@ -1,0 +1,54 @@
+# Local environments, IDE state and Python cache
+**/.venv/
+**/venv/
+**/__pycache__/
+**/*.py[cod]
+**/.idea/
+**/.vscode/
+**/*.iml
+**/*.ipr
+**/*.iws
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.coverage
+**/htmlcov/
+.DS_Store
+Thumbs.db
+
+# Build outputs belong in GitHub Releases, not repository history
+**/build/
+**/dist/
+**/dist-public/
+**/staging/
+**/release/
+**/vendor/
+**/backups/
+**/.qa/
+**/*.exe
+**/*.dll
+**/*.pyd
+**/*.zip
+**/*.7z
+**/*.tar.*
+
+# Private profiles, logs, credentials and local diagnostics
+**/*.log
+**/*.lnk
+**/settings.json
+**/settings.*.json
+**/live-status.json
+**/*-check.json
+**/.env
+**/.env.*
+**/*.pem
+**/*.pfx
+**/*.key
+
+# Generated for the Python runtime actually used by each build.
+# Included in release packages by collect_licenses.py, not source history.
+**/licenses/DEPENDENCIES.json
+**/licenses/Python.txt
+
+# The only versioned sample profile is config.example.json.
+# Original generated WAVs, ICO and documentation PNGs are intentional source assets.

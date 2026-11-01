@@ -1,0 +1,30 @@
+name: Ошибка
+description: Сообщить о проблеме в одной из утилит
+title: "[Sound Control] "
+body:
+  - type: input
+    id: utility
+    attributes:
+      label: Утилита и версия
+      placeholder: Sound Control 1.0.0
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Windows и зависимости
+      placeholder: Windows 11 x64, VoiceMeeter Banana 2.1.3.0
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Как воспроизвести
+      description: Шаги, ожидаемый результат и то, что произошло.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Скриншоты и фрагмент журнала
+      description: Уберите личные пути и сведения, которые не хотите публиковать.

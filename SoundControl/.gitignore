@@ -1,0 +1,29 @@
+# Local environment and IDE
+.venv/
+.idea/
+*.iml
+*.ipr
+*.iws
+__pycache__/
+*.py[cod]
+# Build output and local snapshots
+build/
+dist/
+dist-public/
+staging/
+release/
+backups/
+*.spec
+!SoundControl.spec
+*.log
+connection-check.json
+settings.json
+settings.*.json
+*.lnk
+# Legacy personal audio, excluded from the public build
+/mic_on.wav
+/mic_off.wav
+/preview_*.py
+/vendor/
+/licenses/DEPENDENCIES.json
+/licenses/Python.txt
