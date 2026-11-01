@@ -9,11 +9,26 @@ import subprocess
 import urllib.request
 import zipfile
 from version import APP_VERSION
-from package_source import package as source_package
+from package_source import package as source_package, PUBLIC_FILES
 from package_bundle import package as bundle_package
 
 ROOT=Path(__file__).resolve().parent
 QT_DLLS={'qt6core.dll','qt6gui.dll','qt6widgets.dll','qt6network.dll','qt6svg.dll','qt6opengl.dll'}
+
+def source_revision(root=ROOT,public_files=None):
+    """Describe packaged source, excluding unrelated untracked runner files."""
+    public_files=PUBLIC_FILES if public_files is None else public_files
+    head=subprocess.run(['git','rev-parse','HEAD'],cwd=root,capture_output=True,text=True)
+    status=subprocess.run(['git','status','--porcelain','--untracked-files=no','--','.'],
+                          cwd=root,capture_output=True,text=True)
+    tracked=subprocess.run(['git','ls-files','-z'],cwd=root,capture_output=True,text=True)
+    generated={'licenses/DEPENDENCIES.json','licenses/Python.txt'}
+    untracked=sorted(set(public_files)-set(tracked.stdout.split('\0'))-generated)
+    clean=(head.returncode==status.returncode==tracked.returncode==0
+           and not status.stdout and not untracked)
+    return {'git_commit':head.stdout.strip() if head.returncode==0 else None,
+            'source_state':'clean' if clean else 'uncommitted working tree',
+            'source_changes':status.stdout.splitlines(),'untracked_source_files':untracked}
 
 def check_binary(exe):
     from PyInstaller.archive.readers import CArchiveReader
@@ -67,12 +82,9 @@ def package(download=False):
     files=[standalone,portable,bundle_package(download=download),source_package(),
            qt_sources(folder/f'SoundControl-{APP_VERSION}-qt-sources.zip',download)]
     dependencies=json.loads((ROOT/'licenses/DEPENDENCIES.json').read_text(encoding='utf-8'))
-    head=subprocess.run(['git','rev-parse','HEAD'],cwd=ROOT,capture_output=True,text=True)
-    status=subprocess.run(['git','status','--porcelain'],cwd=ROOT,capture_output=True,text=True)
     info=folder/f'SoundControl-{APP_VERSION}-build-info.json'
     info.write_text(json.dumps({'version':APP_VERSION,'platform':'windows-x64','python':platform.python_version(),
-        'git_commit':head.stdout.strip() if head.returncode==0 else None,
-        'source_state':'clean' if status.returncode==0 and not status.stdout else 'uncommitted working tree',
+        **source_revision(),
         'dependencies':dependencies,'exe_sha256':hashlib.sha256(exe.read_bytes()).hexdigest()},indent=2)+'\n',encoding='utf-8')
     files.append(info)
     checksums=folder/'SHA256SUMS.txt'
